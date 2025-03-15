@@ -55,6 +55,18 @@ func (ts *TypeSet) DelType(key ValType) {
 	delete(ts.values, key)
 }
 
+func (ts *TypeSet) Pop(val any) (any, bool) {
+	assertNotReflectType(val, "Pop")
+	typ := reflect.TypeOf(val)
+	return ts.PopType(typ)
+}
+
+func (ts *TypeSet) PopType(key ValType) (any, bool) {
+	val, ok := ts.values[key]
+	delete(ts.values, key)
+	return val, ok
+}
+
 func (ts *TypeSet) Len() int {
 	return len(ts.values)
 }

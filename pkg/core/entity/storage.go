@@ -2,6 +2,7 @@ package entity
 
 import (
 	"errors"
+	"ijkcode.tech/volumixer/pkg/core/event"
 	"sync"
 )
 
@@ -9,6 +10,7 @@ var ErrEntityDuplicateID = errors.New("duplicate entity id")
 
 type sharedStorage struct {
 	mut      sync.RWMutex
+	events   *event.Bus
 	entities map[ID]*Entity
 }
 
@@ -21,7 +23,9 @@ func (s *sharedStorage) add(ent *Entity, ctx *Context) error {
 	s.entities[id] = ent
 	ent.ctx.Store(ctx)
 
-	//TODO trigger events removed entity
+	event.Publish(s.events, EntityAddedEvent{
+		Entity: ent,
+	})
 
 	return nil
 }
@@ -37,7 +41,9 @@ func (s *sharedStorage) remove(ent *Entity) error {
 	delete(s.entities, id)
 	ent.ctx.Store(nil)
 
-	//TODO trigger events for added entity
+	event.Publish(s.events, EntityRemovedEvent{
+		Entity: ent,
+	})
 
 	return nil
 }

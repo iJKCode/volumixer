@@ -3,6 +3,7 @@ package entity
 import (
 	"errors"
 	"fmt"
+	"ijkcode.tech/volumixer/pkg/core/event"
 	"ijkcode.tech/volumixer/pkg/util/valset"
 	"sync"
 	"sync/atomic"
@@ -16,13 +17,14 @@ type Context struct {
 	children valset.Set[*Context]
 }
 
-func NewContext() *Context {
+func NewContext(events *event.Bus) *Context {
 	ctx := &Context{
 		parent:   nil,
 		children: valset.Make[*Context](),
 	}
 	ctx.storage.Store(&sharedStorage{
 		mut:      sync.RWMutex{},
+		events:   events,
 		entities: make(map[ID]*Entity),
 	})
 	return ctx
@@ -94,6 +96,22 @@ func (c *Context) Close() error {
 
 func (c *Context) IsActive() bool {
 	return c.storage.Load() != nil
+}
+
+func (c *Context) EventBus() *event.Bus {
+	s := c.storage.Load()
+	if s == nil {
+		return nil
+	}
+	return s.events
+}
+
+func (c *Context) publishEvent(value any) {
+	s := c.storage.Load()
+	if s == nil {
+		return
+	}
+	event.Publish(s.events, value)
 }
 
 func (c *Context) Get(id ID) (*Entity, bool) {

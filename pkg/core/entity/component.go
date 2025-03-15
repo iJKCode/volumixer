@@ -34,7 +34,7 @@ func (e *Entity) GetComponentType(component ComponentType) (any, bool) {
 	return e.components.GetType(component)
 }
 
-func GetComponent[C any](e *Entity) (any, bool) {
+func GetComponent[C any](e *Entity) (C, bool) {
 	e.mut.RLock()
 	defer e.mut.RUnlock()
 	return typeset.Get[C](&e.components)
@@ -48,7 +48,14 @@ func (e *Entity) SetComponents(components ...any) {
 	e.mut.Lock()
 	defer e.mut.Unlock()
 	for _, component := range components {
+		if component == nil {
+			continue
+		}
 		e.components.Put(component)
+		e.publishEvent(ComponentUpdatedEvent{
+			Entity:    e,
+			Component: component,
+		})
 	}
 }
 
@@ -56,6 +63,10 @@ func SetComponent[C any](e *Entity, component C) {
 	e.mut.Lock()
 	defer e.mut.Unlock()
 	typeset.Put[C](&e.components, component)
+	e.publishEvent(ComponentUpdatedEvent{
+		Entity:    e,
+		Component: component,
+	})
 }
 
 func (e *Entity) RemoveComponent(component any) {
@@ -66,7 +77,16 @@ func (e *Entity) RemoveComponents(components ...any) {
 	e.mut.Lock()
 	defer e.mut.Unlock()
 	for _, component := range components {
-		e.components.Del(component)
+		if component == nil {
+			continue
+		}
+		value, ok := e.components.Pop(component)
+		if ok {
+			e.publishEvent(ComponentRemovedEvent{
+				Entity:    e,
+				Component: value,
+			})
+		}
 	}
 }
 
@@ -78,14 +98,29 @@ func (e *Entity) RemoveComponentTypes(components ...ComponentType) {
 	e.mut.Lock()
 	defer e.mut.Unlock()
 	for _, typ := range components {
-		e.components.DelType(typ)
+		if typ == nil {
+			continue
+		}
+		value, ok := e.components.PopType(typ)
+		if ok {
+			e.publishEvent(ComponentRemovedEvent{
+				Entity:    e,
+				Component: value,
+			})
+		}
 	}
 }
 
 func RemoveComponent[C any](e *Entity) {
 	e.mut.Lock()
 	defer e.mut.Unlock()
-	typeset.Del[C](&e.components)
+	value, ok := typeset.Pop[C](&e.components)
+	if ok {
+		e.publishEvent(ComponentRemovedEvent{
+			Entity:    e,
+			Component: value,
+		})
+	}
 }
 
 func (e *Entity) Components() []any {

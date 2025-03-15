@@ -7,7 +7,7 @@ import (
 )
 
 func TestContextRelations(t *testing.T) {
-	c := NewContext()
+	c := NewContext(nil)
 	s := c.storage.Load()
 
 	c1 := c.SubContext()
@@ -77,7 +77,7 @@ func TestContextRelations(t *testing.T) {
 }
 
 func TestContextEntities(t *testing.T) {
-	c := NewContext()
+	c := NewContext(nil)
 
 	c1 := c.SubContext()
 	c2 := c.SubContext()

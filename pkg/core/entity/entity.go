@@ -58,3 +58,11 @@ func (e *Entity) ID() ID {
 func (e *Entity) IsActive() bool {
 	return e.ctx.Load() != nil
 }
+
+func (e *Entity) publishEvent(value any) {
+	c := e.ctx.Load()
+	if c == nil {
+		return
+	}
+	c.publishEvent(value)
+}

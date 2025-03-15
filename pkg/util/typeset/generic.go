@@ -7,9 +7,13 @@ func Has[V any](ts *TypeSet) bool {
 	return ts.HasType(typ)
 }
 
-func Get[V any](ts *TypeSet) (any, bool) {
+func Get[V any](ts *TypeSet) (V, bool) {
 	typ := reflect.TypeFor[V]()
-	return ts.GetType(typ)
+	val, ok := ts.GetType(typ)
+	if !ok {
+		return zero[V](), ok
+	}
+	return val.(V), ok
 }
 
 func Put[V any](ts *TypeSet, val V) {
@@ -20,4 +24,18 @@ func Put[V any](ts *TypeSet, val V) {
 func Del[V any](ts *TypeSet) {
 	typ := reflect.TypeFor[V]()
 	ts.DelType(typ)
+}
+
+func Pop[V any](ts *TypeSet) (V, bool) {
+	typ := reflect.TypeFor[V]()
+	val, ok := ts.PopType(typ)
+	if !ok {
+		return zero[V](), ok
+	}
+	return val.(V), ok
+}
+
+func zero[T any]() T {
+	var value T
+	return value
 }

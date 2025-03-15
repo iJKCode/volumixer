@@ -46,12 +46,18 @@ func (e *Entity) SetHandler(command any, handler Handler[any]) {
 	e.mut.Lock()
 	defer e.mut.Unlock()
 	e.handlers.Put(command, handler)
+	e.publishEvent(HandlersUpdatedEvent{
+		Entity: e,
+	})
 }
 
 func (e *Entity) SetHandlerType(command CommandType, handler Handler[any]) {
 	e.mut.Lock()
 	defer e.mut.Unlock()
 	e.handlers.PutType(command, handler)
+	e.publishEvent(HandlersUpdatedEvent{
+		Entity: e,
+	})
 }
 
 func SetHandler[C any](e *Entity, handler Handler[C]) {
@@ -59,6 +65,9 @@ func SetHandler[C any](e *Entity, handler Handler[C]) {
 	defer e.mut.Unlock()
 	wrapped := wrapHandler(handler)
 	typemap.Put[C](&e.handlers, wrapped)
+	e.publishEvent(HandlersUpdatedEvent{
+		Entity: e,
+	})
 }
 
 func (e *Entity) RemoveHandler(command any) {
@@ -71,6 +80,9 @@ func (e *Entity) RemoveHandlers(commands ...any) {
 	for _, command := range commands {
 		e.handlers.Del(command)
 	}
+	e.publishEvent(HandlersUpdatedEvent{
+		Entity: e,
+	})
 }
 
 func (e *Entity) RemoveHandlerType(command CommandType) {
@@ -83,12 +95,18 @@ func (e *Entity) RemoveHandlerTypes(commands ...CommandType) {
 	for _, command := range commands {
 		e.handlers.DelType(command)
 	}
+	e.publishEvent(HandlersUpdatedEvent{
+		Entity: e,
+	})
 }
 
 func RemoveHandler[C any](e *Entity) {
 	e.mut.Lock()
 	defer e.mut.Unlock()
 	typemap.Del[C](&e.handlers)
+	e.publishEvent(HandlersUpdatedEvent{
+		Entity: e,
+	})
 }
 
 func (e *Entity) Handlers() []Handler[any] {
