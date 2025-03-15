@@ -8,21 +8,19 @@ import (
 	"sync"
 )
 
-var _ handlerGroupAny = &handlerGroup[int]{}
-
 type handlerGroupAny interface {
 	handleAny(ctx context.Context, event any)
 }
 
 type handlerGroup[E any] struct {
 	mut      sync.RWMutex
-	handlers valset.Set[*Handler[E]]
+	handlers valset.Set[Handler[E]]
 }
 
 func newHandlerGroup[E any]() *handlerGroup[E] {
 	return &handlerGroup[E]{
 		mut:      sync.RWMutex{},
-		handlers: make(valset.Set[*Handler[E]]),
+		handlers: make(valset.Set[Handler[E]]),
 	}
 }
 
@@ -49,7 +47,7 @@ func getHandlerGroupAny(bus *Bus, event any) handlerGroupAny {
 	if !ok {
 		return nil
 	}
-	
+
 	return groupAny
 }
 
@@ -57,13 +55,11 @@ func (s *handlerGroup[E]) subscribe(handler Handler[E]) (unsubscribe func()) {
 	s.mut.Lock()
 	defer s.mut.Unlock()
 
-	href := &handler
-	s.handlers.Put(href)
-
+	s.handlers.Put(handler)
 	return func() {
 		s.mut.Lock()
 		defer s.mut.Unlock()
-		s.handlers.Del(href)
+		s.handlers.Del(handler)
 	}
 }
 
@@ -77,6 +73,6 @@ func (s *handlerGroup[E]) handle(ctx context.Context, event E) {
 	s.mut.RUnlock()
 
 	for handler := range handlers {
-		(*handler)(ctx, event)
+		handler.Handle(ctx, event)
 	}
 }

@@ -3,6 +3,7 @@ package event
 import (
 	"context"
 	"github.com/stretchr/testify/assert"
+	"sync/atomic"
 	"testing"
 	"time"
 )
@@ -11,10 +12,10 @@ type EventA struct{}
 type EventB struct{}
 type EventC struct{}
 
-func handler[E any](counter *int) func(ctx context.Context, event E) {
-	return func(ctx context.Context, event E) {
+func handler[E any](counter *int) Handler[E] {
+	return Func(func(ctx context.Context, event E) {
 		*counter++
-	}
+	})
 }
 
 func runCount(bus *Bus, iterations int) {
@@ -26,7 +27,7 @@ func runCount(bus *Bus, iterations int) {
 	}
 }
 
-func TestEventBus(t *testing.T) {
+func TestEventHandling(t *testing.T) {
 	bus := NewBus()
 
 	// event counters
@@ -42,7 +43,7 @@ func TestEventBus(t *testing.T) {
 	}
 
 	// check handler functionality
-	handler[int](&count1)(nil, 0)
+	handler[int](&count1).Handle(nil, 0)
 	assert.Equal(t, 1, count1)
 	reset()
 
@@ -135,4 +136,73 @@ func TestEventBus(t *testing.T) {
 	assert.Zero(t, count2)
 	assert.Zero(t, count3)
 	assert.Zero(t, count4)
+}
+
+func TestBusOptions(t *testing.T) {
+	{
+		bus := NewBus(WithQueueLength(5))
+		assert.Equal(t, 5, cap(bus.events))
+		// events should fail to publish when at capacity
+		assert.True(t, PublishTry(bus, EventA{}))
+		assert.True(t, PublishTry(bus, EventA{}))
+		assert.True(t, PublishTry(bus, EventA{}))
+		assert.True(t, PublishTry(bus, EventA{}))
+		assert.True(t, PublishTry(bus, EventA{}))
+		assert.False(t, PublishTry(bus, EventA{}))
+	}
+	{
+		ch := make(chan any, 10)
+		bus := NewBus(WithChan(ch))
+		assert.Equal(t, ch, bus.events)
+	}
+}
+
+func TestRunCancel(t *testing.T) {
+	ch := make(chan any, 10)
+	bus := NewBus(WithChan(ch))
+	Publish(bus, EventA{})
+
+	canceled, cancel := context.WithCancel(context.Background())
+	cancel()
+	functionShouldEnd(t, func() {
+		bus.Run(canceled)
+	})
+	functionShouldEnd(t, func() {
+		bus.RunOnce(canceled)
+	})
+
+	close(ch)
+	functionShouldEnd(t, func() {
+		bus.Run(context.Background())
+	})
+	functionShouldEnd(t, func() {
+		bus.RunOnce(context.Background())
+	})
+}
+
+func TestPublishWhenFull(t *testing.T) {
+	bus := NewBus(WithQueueLength(0))
+
+	canceled, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	functionShouldEnd(t, func() {
+		t.Helper()
+		assert.False(t, PublishTry(bus, EventA{}))
+	})
+
+	functionShouldEnd(t, func() {
+		t.Helper()
+		assert.False(t, PublishContext(canceled, bus, EventA{}))
+	})
+}
+
+func functionShouldEnd(t *testing.T, function func()) {
+	t.Helper()
+	var done atomic.Bool
+	go func() {
+		function()
+		done.Store(true)
+	}()
+	assert.Eventually(t, func() bool { return done.Load() }, time.Second, 10*time.Millisecond)
 }

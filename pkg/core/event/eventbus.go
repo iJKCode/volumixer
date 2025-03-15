@@ -8,7 +8,9 @@ import (
 
 const DefaultQueueLength = 10
 
-type Handler[E any] func(ctx context.Context, event E)
+type Handler[E any] interface {
+	Handle(ctx context.Context, event E)
+}
 
 type Bus struct {
 	mut      sync.Mutex
@@ -23,6 +25,9 @@ func NewBus(options ...func(*Bus)) *Bus {
 		events:   nil,
 		handlers: typemap.Make[handlerGroupAny](),
 		wildcard: newHandlerGroup[any](),
+	}
+	for _, option := range options {
+		option(bus)
 	}
 	if bus.events == nil {
 		bus.events = make(chan any, DefaultQueueLength)
@@ -64,6 +69,30 @@ func Publish(bus *Bus, event any) {
 	bus.events <- event
 }
 
+func PublishTry(bus *Bus, event any) bool {
+	if bus == nil || event == nil {
+		return false
+	}
+	select {
+	case bus.events <- event:
+		return true
+	default:
+		return false
+	}
+}
+
+func PublishContext(ctx context.Context, bus *Bus, event any) bool {
+	if bus == nil || event == nil {
+		return false
+	}
+	select {
+	case bus.events <- event:
+		return true
+	case <-ctx.Done():
+		return false
+	}
+}
+
 func (b *Bus) Chan() chan<- any {
 	return b.events
 }
@@ -71,7 +100,10 @@ func (b *Bus) Chan() chan<- any {
 func (b *Bus) Run(ctx context.Context) {
 	for {
 		select {
-		case event := <-b.events:
+		case event, ok := <-b.events:
+			if !ok {
+				return
+			}
 			b.process(ctx, event)
 		case <-ctx.Done():
 			return
@@ -81,7 +113,10 @@ func (b *Bus) Run(ctx context.Context) {
 
 func (b *Bus) RunOnce(ctx context.Context) {
 	select {
-	case event := <-b.events:
+	case event, ok := <-b.events:
+		if !ok {
+			return
+		}
 		b.process(ctx, event)
 	case <-ctx.Done():
 		return
