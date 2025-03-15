@@ -19,9 +19,17 @@ func (s *sharedStorage) add(ent *Entity, ctx *Context) error {
 	if e, ok := s.entities[id]; ok && (e != ent || e.ctx.Load() != ctx) {
 		return ErrEntityDuplicateID
 	}
+	if ent.HasName() {
+		if e, ok := ctx.named[ent.name]; ok && (e != ent) {
+			return ErrEntityDuplicateName
+		}
+	}
 
 	s.entities[id] = ent
 	ent.ctx.Store(ctx)
+	if ent.HasName() {
+		ctx.named[ent.name] = ent
+	}
 
 	event.Publish(s.events, EntityAddedEvent{
 		Entity: ent,
@@ -36,6 +44,13 @@ func (s *sharedStorage) remove(ent *Entity) error {
 	if !ok || e != ent {
 		// trying to remove a different or nonexistent entity
 		return nil
+	}
+
+	if ent.HasName() {
+		ctx := ent.ctx.Load()
+		if ctx != nil {
+			delete(ctx.named, ent.name)
+		}
 	}
 
 	delete(s.entities, id)

@@ -14,6 +14,7 @@ type CommandType = typeset.ValType
 
 type Entity struct {
 	id         ID
+	name       string
 	ctx        atomic.Pointer[Context]
 	mut        sync.RWMutex
 	components typeset.TypeSet
@@ -37,6 +38,12 @@ func WithID(id ID) func(*Entity) {
 	}
 }
 
+func WithName(name string) func(*Entity) {
+	return func(entity *Entity) {
+		entity.name = name
+	}
+}
+
 func WithComponents(components []any) func(*Entity) {
 	return func(entity *Entity) {
 		entity.SetComponents(components...)
@@ -53,6 +60,14 @@ func WithHandlers(handlers typemap.TypeMap[Handler[any]]) func(*Entity) {
 
 func (e *Entity) ID() ID {
 	return e.id
+}
+
+func (e *Entity) Name() string {
+	return e.name
+}
+
+func (e *Entity) HasName() bool {
+	return e.name != ""
 }
 
 func (e *Entity) IsActive() bool {

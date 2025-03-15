@@ -10,17 +10,20 @@ import (
 )
 
 var ErrContextClosed = errors.New("registry context is closed")
+var ErrEntityDuplicateName = errors.New("duplicate entity name in context")
 
 type Context struct {
 	storage  atomic.Pointer[sharedStorage]
 	parent   *Context
 	children valset.Set[*Context]
+	named    map[string]*Entity
 }
 
 func NewContext(events *event.Bus) *Context {
 	ctx := &Context{
 		parent:   nil,
 		children: valset.Make[*Context](),
+		named:    make(map[string]*Entity),
 	}
 	ctx.storage.Store(&sharedStorage{
 		mut:      sync.RWMutex{},
@@ -40,6 +43,7 @@ func (c *Context) SubContext() *Context {
 	child := &Context{
 		parent:   c,
 		children: valset.Make[*Context](),
+		named:    make(map[string]*Entity),
 	}
 	child.storage.Store(s)
 	c.children.Put(child)
@@ -84,6 +88,7 @@ func (c *Context) Close() error {
 	}
 	for ctx := range contexts {
 		ctx.storage.Swap(nil)
+		ctx.named = nil
 		ctx.parent = nil
 		ctx.children = nil
 	}
@@ -122,6 +127,17 @@ func (c *Context) Get(id ID) (*Entity, bool) {
 	}
 
 	ent, ok := s.entities[id]
+	return ent, ok
+}
+
+func (c *Context) GetNamed(name string) (*Entity, bool) {
+	s, unlock := c.getStorageRead()
+	defer unlock()
+	if s == nil {
+		return nil, false
+	}
+
+	ent, ok := c.named[name]
 	return ent, ok
 }
 
@@ -170,7 +186,22 @@ func (c *Context) HasId(id ID) bool {
 	return ok
 }
 
+func (c *Context) HasNamed(name string) bool {
+	_, ok := c.GetNamed(name)
+	return ok
+}
+
 func (c *Context) Owns(ent *Entity) bool {
+	s, unlock := c.getStorageRead()
+	defer unlock()
+	if s == nil {
+		return false
+	}
+
+	return c == ent.ctx.Load()
+}
+
+func (c *Context) OwnsDeep(ent *Entity) bool {
 	s, unlock := c.getStorageRead()
 	defer unlock()
 	if s == nil {
