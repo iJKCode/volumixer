@@ -1,10 +1,14 @@
 package entity
 
 import (
+	"errors"
+	"fmt"
 	"ijkcode.tech/volumixer/pkg/util/typemap"
 )
 
-type Handler[T any] func(ent *Entity, cmd any) error
+var ErrInvalidCommandType = errors.New("invalid command type")
+
+type Handler[C any] func(ent *Entity, cmd C) error
 
 func (e *Entity) HasHandler(command any) bool {
 	e.mut.RLock()
@@ -115,8 +119,13 @@ func (e *Entity) Handlers() []Handler[any] {
 	return e.handlers.Values()
 }
 
-func wrapHandler[T any](handler Handler[T]) Handler[any] {
+func wrapHandler[C any](handler Handler[C]) Handler[any] {
 	return func(ent *Entity, command any) error {
-		return handler(ent, command)
+		cmd, ok := command.(C)
+		if !ok {
+			var expected C
+			return fmt.Errorf("%w: handler expected %T, got %T", ErrInvalidCommandType, expected, command)
+		}
+		return handler(ent, cmd)
 	}
 }

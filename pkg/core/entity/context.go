@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"ijkcode.tech/volumixer/pkg/core/event"
 	"ijkcode.tech/volumixer/pkg/util/valset"
+	"iter"
+	"maps"
 	"sync"
 	"sync/atomic"
 )
@@ -212,6 +214,20 @@ func (c *Context) OwnsDeep(ent *Entity) bool {
 	contexts.Put(c)
 
 	return contexts.Has(ent.ctx.Load())
+}
+
+func (c *Context) All() iter.Seq[*Entity] {
+	var entities map[ID]*Entity
+
+	s, unlock := c.getStorageRead()
+	defer unlock()
+	if s == nil {
+		entities = make(map[ID]*Entity)
+	} else {
+		entities = maps.Clone(s.entities)
+	}
+
+	return maps.Values(entities)
 }
 
 func (c *Context) collectChildren(s valset.Set[*Context]) valset.Set[*Context] {

@@ -74,7 +74,7 @@ func (e *Entity) HasName() bool {
 	return e.name != ""
 }
 
-func (e *Entity) IsActive() bool {
+func (e *Entity) IsBound() bool {
 	return e.ctx.Load() != nil
 }
 
