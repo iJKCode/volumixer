@@ -1,6 +1,7 @@
 package entity
 
 import (
+	"fmt"
 	"github.com/google/uuid"
 	"ijkcode.tech/volumixer/pkg/util/typemap"
 	"ijkcode.tech/volumixer/pkg/util/typeset"
@@ -22,7 +23,10 @@ type Entity struct {
 }
 
 func NewEntity(options ...func(*Entity)) *Entity {
-	entity := &Entity{}
+	entity := &Entity{
+		components: typeset.Make(),
+		handlers:   typemap.Make[Handler[any]](),
+	}
 	for _, option := range options {
 		option(entity)
 	}
@@ -80,4 +84,14 @@ func (e *Entity) publishEvent(value any) {
 		return
 	}
 	c.publishEvent(value)
+}
+
+func (e *Entity) String() string {
+	return fmt.Sprintf("%+v", struct {
+		ID   uuid.UUID
+		Name string
+	}{
+		ID:   e.id,
+		Name: e.name,
+	})
 }
