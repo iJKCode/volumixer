@@ -117,3 +117,5 @@ fabric.properties
 # Generated protobuf files
 /proto/**/*.*
 !/proto/**/*.proto
+
+old/
