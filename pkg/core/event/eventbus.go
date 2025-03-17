@@ -9,7 +9,7 @@ import (
 const DefaultQueueLength = 10
 
 type Handler[E any] interface {
-	Handle(ctx context.Context, event E)
+	Handle(ctx context.Context, evt E)
 }
 
 type Bus struct {
@@ -55,11 +55,19 @@ func Subscribe[E any](bus *Bus, handler Handler[E]) (unsubscribe func()) {
 	return group.subscribe(handler)
 }
 
+func SubscribeFunc[E any](bus *Bus, handler func(ctx context.Context, evt E)) (unsubscribe func()) {
+	return Subscribe(bus, Func(handler))
+}
+
 func SubscribeAll(bus *Bus, handler Handler[any]) (unsubscribe func()) {
 	if bus == nil || handler == nil {
 		return func() {}
 	}
 	return bus.wildcard.subscribe(handler)
+}
+
+func SubscribeAllFunc(bus *Bus, handler func(ctx context.Context, evt any)) (unsubscribe func()) {
+	return SubscribeAll(bus, Func(handler))
 }
 
 func Publish(bus *Bus, event any) {

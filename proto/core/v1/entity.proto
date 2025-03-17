@@ -1,0 +1,58 @@
+syntax = "proto3";
+
+package core.v1;
+
+import "google/protobuf/any.proto";
+
+option go_package = "ijkcode.tech/volumixer/proto/core/v1;corev1";
+
+service EntityService {
+  rpc EntityList(EntityListRequest) returns (EntityListResponse) {}
+  rpc EntityById(EntityByIdRequest) returns (EntityByIdResponse) {}
+  rpc EventStream(EventStreamRequest) returns (stream EventStreamResponse) {}
+}
+
+message EntityListRequest {}
+message EntityListResponse {
+  repeated EntityInfo entities = 1;
+}
+
+message EntityByIdRequest {
+  string entity_id = 1;
+}
+message EntityByIdResponse {
+  EntityInfo entity = 1;
+}
+
+message EntityInfo {
+  string entity_id = 1;
+  repeated google.protobuf.Any components = 2;
+}
+
+message EventStreamRequest {
+  bool simulate_state = 1;
+}
+message EventStreamResponse {
+  oneof event {
+    EntityAddedEvent entity_added = 1;
+    EntityRemovedEvent entity_removed = 2;
+    ComponentUpdatedEvent component_updated = 3;
+    ComponentRemovedEvent component_removed = 4;
+  }
+}
+
+message EntityAddedEvent {
+  string entity_id = 1;
+  repeated google.protobuf.Any components = 2;
+}
+message EntityRemovedEvent {
+  string entity_id = 1;
+}
+message ComponentUpdatedEvent {
+  string entity_id = 1;
+  google.protobuf.Any component = 2;
+}
+message ComponentRemovedEvent {
+  string entity_id = 1;
+  google.protobuf.Any component = 3;
+}
