@@ -2,6 +2,7 @@ package entity
 
 import (
 	"ijkcode.tech/volumixer/pkg/util/typeset"
+	"reflect"
 )
 
 func (e *Entity) HasComponent(component any) bool {
@@ -51,7 +52,10 @@ func (e *Entity) SetComponents(components ...any) {
 		if component == nil {
 			continue
 		}
-		e.components.Put(component)
+		old, ok := e.components.Swap(component)
+		if ok && reflect.DeepEqual(old, component) {
+			continue
+		}
 		e.publishEvent(ComponentUpdatedEvent{
 			Entity:    e,
 			Component: component,
@@ -62,7 +66,10 @@ func (e *Entity) SetComponents(components ...any) {
 func SetComponent[C any](e *Entity, component C) {
 	e.mut.Lock()
 	defer e.mut.Unlock()
-	typeset.Put[C](&e.components, component)
+	old, ok := typeset.Swap[C](&e.components, component)
+	if ok && reflect.DeepEqual(old, component) {
+		return
+	}
 	e.publishEvent(ComponentUpdatedEvent{
 		Entity:    e,
 		Component: component,

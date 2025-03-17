@@ -16,7 +16,12 @@ type sharedStorage struct {
 
 func (s *sharedStorage) add(ent *Entity, ctx *Context) error {
 	id := ent.ID()
-	if e, ok := s.entities[id]; ok && (e != ent || e.ctx.Load() != ctx) {
+	e, ok := s.entities[id]
+	if ok {
+		if e == ent && e.ctx.Load() == ctx {
+			// entity is already bound under the specified context
+			return nil
+		}
 		return ErrEntityDuplicateID
 	}
 	if ent.HasName() {

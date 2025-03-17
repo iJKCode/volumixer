@@ -21,6 +21,15 @@ func Put[V any](ts *TypeSet, val V) {
 	ts.values[typ] = val
 }
 
+func Swap[V any](ts *TypeSet, val V) (V, bool) {
+	typ := reflect.TypeFor[V]()
+	old, ok := ts.SwapType(typ, val)
+	if !ok {
+		return zero[V](), ok
+	}
+	return old.(V), ok
+}
+
 func Del[V any](ts *TypeSet) {
 	typ := reflect.TypeFor[V]()
 	ts.DelType(typ)

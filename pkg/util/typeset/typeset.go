@@ -45,6 +45,18 @@ func (ts *TypeSet) Put(val any) {
 	ts.values[typ] = val
 }
 
+func (ts *TypeSet) Swap(val any) (any, bool) {
+	assertNotReflectType(val, "Pop")
+	typ := reflect.TypeOf(val)
+	return ts.SwapType(typ, val)
+}
+
+func (ts *TypeSet) SwapType(key ValType, val any) (any, bool) {
+	old, ok := ts.values[key]
+	ts.values[key] = val
+	return old, ok
+}
+
 func (ts *TypeSet) Del(val any) {
 	assertNotReflectType(val, "Del")
 	typ := reflect.TypeOf(val)
