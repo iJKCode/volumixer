@@ -7,8 +7,8 @@ import (
 	"ijkcode.tech/volumixer/pkg/widget"
 )
 
-var _ entityProcessor = &sourceEntityProcessor{}
-var _ commandProcessor = &sourceCommandProcessor{}
+var _ entityProcessor = (*sourceEntityProcessor)(nil)
+var _ commandProcessor = (*sourceCommandProcessor)(nil)
 
 type sourceEntityProcessor struct {
 	c *Connection

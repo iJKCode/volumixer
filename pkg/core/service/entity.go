@@ -6,13 +6,11 @@ import (
 	"errors"
 	"fmt"
 	"github.com/google/uuid"
-	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/anypb"
+	"ijkcode.tech/volumixer/pkg/core/component"
 	"ijkcode.tech/volumixer/pkg/core/entity"
 	"ijkcode.tech/volumixer/pkg/core/event"
-	"ijkcode.tech/volumixer/pkg/widget"
 	corev1 "ijkcode.tech/volumixer/proto/core/v1"
-	widgetv1 "ijkcode.tech/volumixer/proto/widget/v1"
 	"log/slog"
 )
 
@@ -78,29 +76,29 @@ func (h EntityServiceHandler) EventStream(ctx context.Context, req *connect.Requ
 		}
 	})()
 	defer event.SubscribeFunc(bus, func(ctx context.Context, evt entity.ComponentUpdatedEvent) {
-		component := h.componentToAny(evt.Component)
-		if component == nil {
+		cmp := h.componentToAny(evt.Component)
+		if cmp == nil {
 			return
 		}
 		streamEvents <- &corev1.EventStreamResponse{
 			Event: &corev1.EventStreamResponse_ComponentUpdated{
 				ComponentUpdated: &corev1.ComponentUpdatedEvent{
 					EntityId:  evt.Entity.ID().String(),
-					Component: component,
+					Component: cmp,
 				},
 			},
 		}
 	})()
 	defer event.SubscribeFunc(bus, func(ctx context.Context, evt entity.ComponentRemovedEvent) {
-		component := h.componentToAny(evt.Component)
-		if component == nil {
+		cmp := h.componentToAny(evt.Component)
+		if cmp == nil {
 			return
 		}
 		streamEvents <- &corev1.EventStreamResponse{
 			Event: &corev1.EventStreamResponse_ComponentRemoved{
 				ComponentRemoved: &corev1.ComponentRemovedEvent{
 					EntityId:  evt.Entity.ID().String(),
-					Component: component,
+					Component: cmp,
 				},
 			},
 		}
@@ -146,41 +144,26 @@ func (h EntityServiceHandler) EventStream(ctx context.Context, req *connect.Requ
 
 func (h EntityServiceHandler) componentsToAny(components []any) []*anypb.Any {
 	var result []*anypb.Any
-	for _, component := range components {
-		anyComponent := h.componentToAny(component)
-		if anyComponent != nil {
-			result = append(result, anyComponent)
+	for _, cmp := range components {
+		msg := h.componentToAny(cmp)
+		if msg != nil {
+			result = append(result, msg)
 		}
 	}
 	return result
 }
 
-func (h EntityServiceHandler) componentToAny(component any) *anypb.Any {
-	protoComponent := h.componentToProto(component)
-	if protoComponent == nil {
-		return nil
-	}
-	anyComponent, err := anypb.New(protoComponent)
+func (h EntityServiceHandler) componentToAny(cmp any) *anypb.Any {
+	msg, meta, err := component.MarshalProtoAny(cmp)
 	if err != nil {
-		h.Log.Warn("error marshaling component", "error", err)
+		if errors.Is(err, component.ErrUnknownComponent) {
+			return nil
+		}
+		h.Log.Warn("failed to marshal component", "error", err, "type", fmt.Sprintf("%T", cmp))
 		return nil
 	}
-	return anyComponent
-}
-
-func (h EntityServiceHandler) componentToProto(component any) proto.Message {
-	switch component := component.(type) {
-	case widget.InfoComponent:
-		return &widgetv1.InfoComponent{
-			Name: component.Name,
-		}
-	case widget.VolumeComponent:
-		return &widgetv1.VolumeComponent{
-			Level: component.Level,
-			Muted: component.Muted,
-		}
-	default:
-		//TODO implement dynamic component to proto conversion
+	if !meta.ShouldReplicate() {
 		return nil
 	}
+	return msg
 }

@@ -18,6 +18,9 @@ import (
 	"os/signal"
 	"sync"
 	"time"
+
+	// register components
+	_ "ijkcode.tech/volumixer/pkg/widget"
 )
 
 func main() {
