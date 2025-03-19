@@ -3,6 +3,7 @@ package pulseaudio
 import (
 	"fmt"
 	"github.com/jfreymuth/pulse/proto"
+	"ijkcode.tech/volumixer/pkg/driver/pulseaudio/pulse"
 	"ijkcode.tech/volumixer/pkg/widget"
 	"math"
 )
@@ -39,13 +40,7 @@ func processInfoComponent(name string, info proto.PropList) widget.InfoComponent
 }
 
 func processVolumeComponent(channels proto.ChannelVolumes, muted bool) widget.VolumeComponent {
-	var level float64
-	if len(channels) > 0 {
-		for _, channel := range channels {
-			level += channel.Norm()
-		}
-		level /= float64(len(channels))
-	}
+	level := pulse.VolumeMax(channels).Norm()
 	level = math.Round(level/VolumePrecision) * VolumePrecision
 	return widget.VolumeComponent{
 		Level: float32(level),
