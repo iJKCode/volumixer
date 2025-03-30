@@ -1,8 +1,8 @@
 package widget
 
 import (
+	widgetv1 "github.com/ijkcode/volumixer-api/gen/go/widget/v1"
 	"ijkcode.tech/volumixer/pkg/core/component"
-	widgetv1 "ijkcode.tech/volumixer/proto/widget/v1"
 )
 
 type InfoComponent struct {

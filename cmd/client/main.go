@@ -3,10 +3,10 @@ package main
 import (
 	"connectrpc.com/connect"
 	"context"
+	entityv1 "github.com/ijkcode/volumixer-api/gen/go/entity/v1"
+	"github.com/ijkcode/volumixer-api/gen/go/entity/v1/entityv1connect"
 	"google.golang.org/protobuf/types/known/anypb"
 	"ijkcode.tech/volumixer/pkg/core/component"
-	corev1 "ijkcode.tech/volumixer/proto/core/v1"
-	"ijkcode.tech/volumixer/proto/core/v1/corev1connect"
 	"log/slog"
 	"net/http"
 	"os"
@@ -22,7 +22,7 @@ func main() {
 	meta := component.ListMetadata()
 	slog.Info("registered components", "count", len(meta))
 
-	client := corev1connect.NewEntityServiceClient(
+	client := entityv1connect.NewEntityServiceClient(
 		http.DefaultClient,
 		"http://localhost:5000",
 	)
@@ -30,7 +30,7 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
 
-	res, err := client.EventStream(ctx, connect.NewRequest(&corev1.EventStreamRequest{
+	res, err := client.EventStream(ctx, connect.NewRequest(&entityv1.EventStreamRequest{
 		SimulateState: true,
 	}))
 	if err != nil {
@@ -39,18 +39,18 @@ func main() {
 		for res.Receive() {
 			slog.Debug("got event", "event", res.Msg())
 			switch evt := res.Msg().Event.(type) {
-			case *corev1.EventStreamResponse_EntityAdded:
+			case *entityv1.EventStreamResponse_EntityAdded:
 				slog.Info("entity added", "entity", evt.EntityAdded.EntityId)
 				for _, msg := range evt.EntityAdded.Components {
 					cmp := unmarshalComponent(msg)
 					slog.Info("component updated", "entity", evt.EntityAdded.EntityId, "component", cmp)
 				}
-			case *corev1.EventStreamResponse_EntityRemoved:
+			case *entityv1.EventStreamResponse_EntityRemoved:
 				slog.Info("entity removed", "entity", evt.EntityRemoved.EntityId)
-			case *corev1.EventStreamResponse_ComponentUpdated:
+			case *entityv1.EventStreamResponse_ComponentUpdated:
 				cmp := unmarshalComponent(evt.ComponentUpdated.Component)
 				slog.Info("component updated", "entity", evt.ComponentUpdated.EntityId, "component", cmp)
-			case *corev1.EventStreamResponse_ComponentRemoved:
+			case *entityv1.EventStreamResponse_ComponentRemoved:
 				cmp := unmarshalComponent(evt.ComponentRemoved.Component)
 				slog.Info("component removed", "entity", evt.ComponentRemoved.EntityId, "component", cmp)
 			default:

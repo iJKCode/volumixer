@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/ijkcode/volumixer-api/gen/go/entity/v1/entityv1connect"
 	"ijkcode.tech/volumixer/pkg/core/command"
 	"ijkcode.tech/volumixer/pkg/core/entity"
 	"ijkcode.tech/volumixer/pkg/core/event"
@@ -11,7 +12,6 @@ import (
 	"ijkcode.tech/volumixer/pkg/core/service"
 	"ijkcode.tech/volumixer/pkg/driver/pulseaudio"
 	"ijkcode.tech/volumixer/pkg/widget"
-	"ijkcode.tech/volumixer/proto/core/v1/corev1connect"
 	"log/slog"
 	"net/http"
 	"os"
@@ -42,12 +42,8 @@ func main() {
 		log.Error("error creating server", "error", err)
 	}
 
-	srv.ReflectNames().Add(corev1connect.CoreServiceName)
-	srv.ServeMux().Handle(corev1connect.NewCoreServiceHandler(&service.CoreServiceHandler{
-		Log: log.With("handler", "CoreService"),
-	}))
-	srv.ReflectNames().Add(corev1connect.EntityServiceName)
-	srv.ServeMux().Handle(corev1connect.NewEntityServiceHandler(&service.EntityServiceHandler{
+	srv.ReflectNames().Add(entityv1connect.EntityServiceName)
+	srv.ServeMux().Handle(entityv1connect.NewEntityServiceHandler(&service.EntityServiceHandler{
 		Log:      log.With("handler", "EntityService"),
 		Entities: repo,
 	}))
