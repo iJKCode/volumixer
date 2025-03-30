@@ -3,8 +3,8 @@ package entity
 import (
 	"errors"
 	"fmt"
-	"ijkcode.tech/volumixer/pkg/core/event"
-	"ijkcode.tech/volumixer/pkg/util/valset"
+	"github.com/ijkcode/volumixer/pkg/core/event"
+	"github.com/ijkcode/volumixer/pkg/util/valset"
 	"iter"
 	"maps"
 	"sync"

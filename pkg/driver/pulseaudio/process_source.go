@@ -2,9 +2,9 @@ package pulseaudio
 
 import (
 	"fmt"
+	"github.com/ijkcode/volumixer/pkg/core/entity"
+	"github.com/ijkcode/volumixer/pkg/widget"
 	"github.com/jfreymuth/pulse/proto"
-	"ijkcode.tech/volumixer/pkg/core/entity"
-	"ijkcode.tech/volumixer/pkg/widget"
 )
 
 var _ entityProcessor = (*sourceEntityProcessor)(nil)

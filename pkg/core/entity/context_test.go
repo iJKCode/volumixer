@@ -1,8 +1,8 @@
 package entity
 
 import (
+	"github.com/ijkcode/volumixer/pkg/util/valset"
 	"github.com/stretchr/testify/assert"
-	"ijkcode.tech/volumixer/pkg/util/valset"
 	"testing"
 )
 

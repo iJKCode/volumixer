@@ -2,8 +2,8 @@ package event
 
 import (
 	"context"
-	"ijkcode.tech/volumixer/pkg/util/typemap"
-	"ijkcode.tech/volumixer/pkg/util/valset"
+	"github.com/ijkcode/volumixer/pkg/util/typemap"
+	"github.com/ijkcode/volumixer/pkg/util/valset"
 	"maps"
 	"sync"
 )

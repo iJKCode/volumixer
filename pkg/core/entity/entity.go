@@ -3,8 +3,8 @@ package entity
 import (
 	"fmt"
 	"github.com/google/uuid"
-	"ijkcode.tech/volumixer/pkg/util/typemap"
-	"ijkcode.tech/volumixer/pkg/util/typeset"
+	"github.com/ijkcode/volumixer/pkg/util/typemap"
+	"github.com/ijkcode/volumixer/pkg/util/typeset"
 	"sync"
 	"sync/atomic"
 )

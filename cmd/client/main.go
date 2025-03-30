@@ -5,15 +5,15 @@ import (
 	"context"
 	entityv1 "github.com/ijkcode/volumixer-api/gen/go/entity/v1"
 	"github.com/ijkcode/volumixer-api/gen/go/entity/v1/entityv1connect"
+	"github.com/ijkcode/volumixer/pkg/core/component"
 	"google.golang.org/protobuf/types/known/anypb"
-	"ijkcode.tech/volumixer/pkg/core/component"
 	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
 
 	// register components
-	_ "ijkcode.tech/volumixer/pkg/widget"
+	_ "github.com/ijkcode/volumixer/pkg/widget"
 )
 
 func main() {

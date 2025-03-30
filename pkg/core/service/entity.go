@@ -7,10 +7,10 @@ import (
 	"fmt"
 	"github.com/google/uuid"
 	entityv1 "github.com/ijkcode/volumixer-api/gen/go/entity/v1"
+	"github.com/ijkcode/volumixer/pkg/core/component"
+	"github.com/ijkcode/volumixer/pkg/core/entity"
+	"github.com/ijkcode/volumixer/pkg/core/event"
 	"google.golang.org/protobuf/types/known/anypb"
-	"ijkcode.tech/volumixer/pkg/core/component"
-	"ijkcode.tech/volumixer/pkg/core/entity"
-	"ijkcode.tech/volumixer/pkg/core/event"
 	"log/slog"
 )
 

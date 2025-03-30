@@ -2,9 +2,9 @@ package pulseaudio
 
 import (
 	"fmt"
+	"github.com/ijkcode/volumixer/pkg/driver/pulseaudio/pulse"
+	"github.com/ijkcode/volumixer/pkg/widget"
 	"github.com/jfreymuth/pulse/proto"
-	"ijkcode.tech/volumixer/pkg/driver/pulseaudio/pulse"
-	"ijkcode.tech/volumixer/pkg/widget"
 	"math"
 )
 

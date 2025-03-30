@@ -3,9 +3,9 @@ package pulseaudio
 import (
 	"context"
 	"fmt"
+	"github.com/ijkcode/volumixer/pkg/core/entity"
+	"github.com/ijkcode/volumixer/pkg/driver/pulseaudio/pulse"
 	"github.com/jfreymuth/pulse/proto"
-	"ijkcode.tech/volumixer/pkg/core/entity"
-	"ijkcode.tech/volumixer/pkg/driver/pulseaudio/pulse"
 	"log/slog"
 )
 

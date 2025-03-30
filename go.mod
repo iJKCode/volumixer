@@ -1,12 +1,13 @@
-module ijkcode.tech/volumixer
+module github.com/ijkcode/volumixer
 
 go 1.23.1
+
+require github.com/ijkcode/volumixer-api v0.1.0
 
 require (
 	connectrpc.com/connect v1.18.1
 	connectrpc.com/grpcreflect v1.3.0
 	github.com/google/uuid v1.6.0
-	github.com/ijkcode/volumixer-api v0.1.0
 	github.com/jfreymuth/pulse v0.1.2-0.20250227192922-7a016f9e4952
 	github.com/stretchr/testify v1.10.0
 	golang.org/x/net v0.37.0

@@ -2,7 +2,7 @@ package event
 
 import (
 	"context"
-	"ijkcode.tech/volumixer/pkg/util/typemap"
+	"github.com/ijkcode/volumixer/pkg/util/typemap"
 	"sync"
 )
 

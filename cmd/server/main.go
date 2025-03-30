@@ -5,13 +5,13 @@ import (
 	"errors"
 	"fmt"
 	"github.com/ijkcode/volumixer-api/gen/go/entity/v1/entityv1connect"
-	"ijkcode.tech/volumixer/pkg/core/command"
-	"ijkcode.tech/volumixer/pkg/core/entity"
-	"ijkcode.tech/volumixer/pkg/core/event"
-	"ijkcode.tech/volumixer/pkg/core/server"
-	"ijkcode.tech/volumixer/pkg/core/service"
-	"ijkcode.tech/volumixer/pkg/driver/pulseaudio"
-	"ijkcode.tech/volumixer/pkg/widget"
+	"github.com/ijkcode/volumixer/pkg/core/command"
+	"github.com/ijkcode/volumixer/pkg/core/entity"
+	"github.com/ijkcode/volumixer/pkg/core/event"
+	"github.com/ijkcode/volumixer/pkg/core/server"
+	"github.com/ijkcode/volumixer/pkg/core/service"
+	"github.com/ijkcode/volumixer/pkg/driver/pulseaudio"
+	"github.com/ijkcode/volumixer/pkg/widget"
 	"log/slog"
 	"net/http"
 	"os"
@@ -20,7 +20,7 @@ import (
 	"time"
 
 	// register components
-	_ "ijkcode.tech/volumixer/pkg/widget"
+	_ "github.com/ijkcode/volumixer/pkg/widget"
 )
 
 func main() {

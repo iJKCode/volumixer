@@ -2,7 +2,7 @@ package entity
 
 import (
 	"errors"
-	"ijkcode.tech/volumixer/pkg/core/event"
+	"github.com/ijkcode/volumixer/pkg/core/event"
 	"sync"
 )
 

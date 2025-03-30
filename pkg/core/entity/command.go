@@ -3,7 +3,7 @@ package entity
 import (
 	"errors"
 	"fmt"
-	"ijkcode.tech/volumixer/pkg/util/typemap"
+	"github.com/ijkcode/volumixer/pkg/util/typemap"
 )
 
 var ErrInvalidCommandType = errors.New("invalid command type")

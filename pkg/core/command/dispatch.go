@@ -3,7 +3,7 @@ package command
 import (
 	"errors"
 	"fmt"
-	"ijkcode.tech/volumixer/pkg/core/entity"
+	"github.com/ijkcode/volumixer/pkg/core/entity"
 )
 
 var ErrCommandNotSupported = errors.New("command not supported")

@@ -1,7 +1,7 @@
 package entity
 
 import (
-	"ijkcode.tech/volumixer/pkg/util/typeset"
+	"github.com/ijkcode/volumixer/pkg/util/typeset"
 	"reflect"
 )
 
