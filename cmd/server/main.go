@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/ijkcode/volumixer-api/gen/go/command/v1/commandv1connect"
 	"github.com/ijkcode/volumixer-api/gen/go/entity/v1/entityv1connect"
 	"github.com/ijkcode/volumixer/pkg/core/command"
 	"github.com/ijkcode/volumixer/pkg/core/entity"
@@ -14,6 +15,8 @@ import (
 	"github.com/ijkcode/volumixer/pkg/widget"
 	"log/slog"
 	"net/http"
+	"net/http/httputil"
+	"net/url"
 	"os"
 	"os/signal"
 	"sync"
@@ -47,6 +50,21 @@ func main() {
 		Log:      log.With("handler", "EntityService"),
 		Entities: repo,
 	}))
+
+	srv.ReflectNames().Add(commandv1connect.VolumeServiceName)
+	srv.ServeMux().Handle(commandv1connect.NewVolumeServiceHandler(&widget.VolumeServiceHandler{
+		Log:      log.With("handler", "VolumeService"),
+		Entities: repo,
+	}))
+
+	proxyUrl, err := url.Parse("http://localhost:5173")
+	if err != nil {
+		log.Error("error parsing proxy url", "error", err)
+	}
+	proxyClient := httputil.NewSingleHostReverseProxy(proxyUrl)
+	srv.ServeMux().HandleFunc("/app/", func(res http.ResponseWriter, req *http.Request) {
+		proxyClient.ServeHTTP(res, req)
+	})
 
 	event.SubscribeAll(bus, event.Func(func(ctx context.Context, event any) {
 		log.Info("entity event", "type", fmt.Sprintf("%T", event), "data", event)

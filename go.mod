@@ -2,7 +2,7 @@ module github.com/ijkcode/volumixer
 
 go 1.23.1
 
-require github.com/ijkcode/volumixer-api v0.1.0
+require github.com/ijkcode/volumixer-api v0.1.1
 
 require (
 	connectrpc.com/connect v1.18.1
